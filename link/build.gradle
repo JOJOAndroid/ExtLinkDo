@@ -6,14 +6,12 @@ plugins {
 
 android {
     namespace 'com.bb.link'
-    compileSdk 33
+    compileSdk 31
 
     defaultConfig {
 //        applicationId "com.bb.link"
         minSdk 24
-        targetSdk 33
-        versionCode 1
-        versionName "1.0"
+        targetSdk 31
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

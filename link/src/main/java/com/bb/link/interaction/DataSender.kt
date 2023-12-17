@@ -7,47 +7,33 @@ import java.io.*
 import java.net.InetSocketAddress
 import java.net.Socket
 
-class DataSender(private val filePath: String, private val ipAddress: String, private val port: Int) {
+class DataSender(private val data: String, private val ipAddress: String, private val port: Int) {
     var clientSocket: Socket?= null
     fun sendFile() {
         GlobalScope.launch(Dispatchers.IO) {
 
-            if (filePath.isNotEmpty()) {
-                val file = File(filePath)
-                val fileSize = file.length().toInt()
+            if (data.isNotEmpty()) {
                 try {
-                    clientSocket = Socket()
-                    clientSocket.use { socket ->
-                        socket?.connect(InetSocketAddress(ipAddress, port), 5000)
-
-                        // 发送文件名和文件大小
-                        DataOutputStream(socket?.getOutputStream()).use { dos ->
-                            dos.writeUTF(file.name)
-                            dos.writeInt(fileSize)
+                    if(clientSocket == null) {
+                        clientSocket = Socket()
+                        clientSocket.use { socket ->
+                            socket?.connect(InetSocketAddress(ipAddress, port), 5000)
+                            val writer = OutputStreamWriter(socket?.getOutputStream())
+                            writer.write(data)
+                            writer.flush()
                         }
 
-                        // 发送文件内容
-                        BufferedInputStream(FileInputStream(file)).use { bis ->
-                            DataOutputStream(socket?.getOutputStream()).use { dos ->
-                                val buffer = ByteArray(4096)
-                                var bytesRead: Int
-
-                                while (bis.read(buffer).also { bytesRead = it } != -1) {
-                                    dos.write(buffer, 0, bytesRead)
-                                }
-                            }
+                    }else {
+                        clientSocket.use { socket ->
+                            val writer = OutputStreamWriter(socket?.getOutputStream())
+                            writer.write(data)
+                            writer.flush()
                         }
-
-                        println("文件发送完成")
                     }
                 }catch (e: Exception) {
                     e.printStackTrace()
                 }finally {
-                    try {
-                        clientSocket?.close()
-                    } catch (e: IOException) {
-                        e.printStackTrace()
-                    }
+
                 }
             }else {
                 println("File not found:")

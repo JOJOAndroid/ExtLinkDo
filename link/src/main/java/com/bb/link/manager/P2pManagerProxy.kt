@@ -1,12 +1,12 @@
 package com.bb.link.manager
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.net.MacAddress
-import android.net.NetworkInfo
+import android.content.pm.PackageManager
 import android.net.wifi.p2p.*
 import android.os.Build
 import android.os.Environment
@@ -14,6 +14,7 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.core.app.ActivityCompat
 import com.bb.link.interaction.*
 import com.bb.link.mode.BDevice
 import kotlinx.coroutines.GlobalScope
@@ -34,10 +35,6 @@ class P2pManagerProxy private constructor() : BroadcastReceiver(),IP2pManagerPro
         val instance : P2pManagerProxy by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
             P2pManagerProxy()
         }
-    }
-
-    init {
-
     }
 
     override fun initP2pClientProxy(context: Context, myLooper: Looper) {
@@ -64,7 +61,6 @@ class P2pManagerProxy private constructor() : BroadcastReceiver(),IP2pManagerPro
             override fun onSuccess() {
                 // Device is ready to accept incoming connections from peers.
                 Log.d(TAG,"创建群组成功")
-                RegisterReceiveFile(Environment.getExternalStorageDirectory().absolutePath+"/P2P/")
             }
 
             override fun onFailure(reasonCode: Int) {
@@ -151,7 +147,6 @@ class P2pManagerProxy private constructor() : BroadcastReceiver(),IP2pManagerPro
 
     }
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun disconnectClients(device: BDevice) {
         //此方法存在版本不适用情况
 //        wifiP2pManager.removeClient(channel, MacAddress.fromString(device.address),object : WifiP2pManager.ActionListener {
@@ -164,6 +159,7 @@ class P2pManagerProxy private constructor() : BroadcastReceiver(),IP2pManagerPro
 //        })
     }
 
+    @SuppressLint("MissingPermission")
     override fun getGroupDevice() {
         wifiP2pManager.requestGroupInfo(channel
         ) { group ->
@@ -235,12 +231,14 @@ class P2pManagerProxy private constructor() : BroadcastReceiver(),IP2pManagerPro
                     listener?.onConnectionChanged(true,null)
                     requestWifiP2pInfo()
                     if(linkType == LinkTypeServer) {
-                        registerPoint()
+                        registerDataPoint()
+                        registerReceiveFile(ReceiveFilePath)
                     }
                 }else {
                     listener?.onConnectionChanged(false,null)
                     if(linkType == LinkTypeServer) {
-                        unRegisterPoint()
+                        unRegisterDataPoint()
+                        unRegisterReceiveFile()
                     }
                 }
             }
@@ -259,7 +257,8 @@ class P2pManagerProxy private constructor() : BroadcastReceiver(),IP2pManagerPro
 
                     Log.d("LZP","$deviceName,$deviceAddress,${device.status},${linkType == LinkTypeServer}")
                     if(state == 0 && linkType == LinkTypeServer) {
-                        registerPoint()
+                        registerDataPoint()
+                        registerReceiveFile(ReceiveFilePath)
                     }
                 }
             }
@@ -267,6 +266,7 @@ class P2pManagerProxy private constructor() : BroadcastReceiver(),IP2pManagerPro
     }
 
     // 请求设备列表
+    @SuppressLint("MissingPermission")
     fun requestPeers() {
         wifiP2pManager.requestPeers(channel
         ) { peers -> // 更新 RecyclerView 中的设备列表
@@ -321,27 +321,40 @@ class P2pManagerProxy private constructor() : BroadcastReceiver(),IP2pManagerPro
         this.msgListener = listener
     }
 
-    private var dataSender: DataSender? = null
     private var fileReceiver: FileReceiver? = null
-    private var registerPoint: RegisterPoint? = null
+    private var fileSender: FileSender? = null
 
-    fun RegisterReceiveFile(path : String) {
+    private var dataReceiver: DataReceiver? = null
+    private var dataSender: DataSender? = null
+
+
+    fun registerReceiveFile(path : String) {
         // 在这里添加接收文件的代码
         if(fileReceiver == null) {
             fileReceiver = FileReceiver()
-            fileReceiver?.receiveFile(path,msgListener)
         }
+        fileReceiver?.receiveFile(path,msgListener)
     }
 
-    private fun registerPoint() {
-        if(registerPoint == null) {
-            registerPoint = RegisterPoint()
-        }
-        registerPoint?.receiveFileInBackground(msgListener)
+    var ReceiveFilePath = ""
+    fun registerReceiveFilePath(path : String) {
+        // 在这里添加接收文件的代码
+        ReceiveFilePath = path
     }
 
-    private fun unRegisterPoint() {
-        registerPoint?.colseSocket()
+    private fun registerDataPoint() {
+        if(dataReceiver == null) {
+            dataReceiver = DataReceiver()
+        }
+        dataReceiver?.receiveFileInBackground(msgListener)
+    }
+
+    fun unRegisterDataPoint() {
+        dataReceiver?.colseSocket()
+    }
+
+    fun unRegisterReceiveFile() {
+        fileReceiver?.colseSocket()
     }
 
     fun sendJsonData(data: String,point: Int) {
@@ -352,6 +365,17 @@ class P2pManagerProxy private constructor() : BroadcastReceiver(),IP2pManagerPro
                     it, point)
             }
             dataSender?.sendFile()
+        },100)
+    }
+
+    fun sendFile(path: String,point: Int) {
+        Handler().postDelayed({
+            // 在这里添加发送文件的代码
+            fileSender = hostAddress?.let {
+                FileSender(path,
+                    it, point)
+            }
+            fileSender?.sendFile()
         },100)
     }
 }

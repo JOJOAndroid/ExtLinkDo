@@ -28,6 +28,7 @@ import com.bb.link.mode.BDevice
 import com.bb.link.util.PermissionUtil
 import com.google.gson.Gson
 import com.lzp.extlinkdo.adapter.DeviceListAdapter
+import java.io.File
 
 class P2PFileTransferActivity : AppCompatActivity(){
 
@@ -76,6 +77,19 @@ class P2PFileTransferActivity : AppCompatActivity(){
         }
     }
 
+    /**
+     * 发送=1
+     * 发送成功=2
+     */
+    var fileSendStatus = 0
+    var testFile1 = Environment.getExternalStorageDirectory().absolutePath+"/DCIM/shared.png"
+    var testFile2 = Environment.getExternalStorageDirectory().absolutePath+"/DCIM/shared1.mp4"
+
+    /**
+     * 1 testFile1
+     * 2 testFile2
+     */
+    var sendFileSwitch = 1
     private fun init() {
         //UI 初始化
         showMsgData = findViewById(R.id.show_msg_data)
@@ -86,23 +100,37 @@ class P2PFileTransferActivity : AppCompatActivity(){
             if(mLinkType == P2pManagerProxy.LinkTypeServer) "服务端" else "客户端"
 
         findViewById<TextView>(R.id.devices_update).setOnClickListener {
+            p2pManagerProxy?.removeGroupDevice()
+            p2pManagerProxy?.cancelConnect()
             startScarn()
             Toast.makeText(this,"开始扫描",Toast.LENGTH_SHORT).show()
         }
 
         findViewById<TextView>(R.id.send_key).setOnClickListener {
-
-            sendKey(InterConstants.Datatype_Key,"","","","up")
+            sendKey(InterConstants.Datatype_Key,"","up")
         }
 
         findViewById<TextView>(R.id.send_media).setOnClickListener {
-            sendKey(InterConstants.Datatype_File,
-                Environment.getExternalStorageDirectory().absolutePath+"/P2P/",
-                "我的Mp3.mp3","","")
+            if(fileSendStatus != 1) {
+                fileSendStatus = 1
+                if(sendFileSwitch == 1) {
+                    sendFile(testFile1)
+                    sendFileSwitch = 2
+                }else if(sendFileSwitch == 2) {
+                    sendFile(testFile2)
+                    sendFileSwitch = 1
+                }
+            }else{
+                Log.d("LZP","fileSendStatus:$fileSendStatus")
+            }
+        }
+        findViewById<TextView>(R.id.send_media).setOnLongClickListener {
+            fileSendStatus = 2
+            false
         }
 
         findViewById<TextView>(R.id.send_txt).setOnClickListener {
-            sendKey(InterConstants.Datatype_Text, "", "","请在服务端的大哥们好好看看这段文字","")
+            sendKey(InterConstants.Datatype_Text,  "","请在服务端的大哥们好好看看这段文字")
         }
 
         if(mLinkType == P2pManagerProxy.LinkTypeServer) {
@@ -114,7 +142,6 @@ class P2PFileTransferActivity : AppCompatActivity(){
         //adapter
         deviceListAdapter =DeviceListAdapter(ArrayList(), object : DeviceListAdapter.OnDeviceClickListener {
             //正常连接
-            @RequiresApi(Build.VERSION_CODES.TIRAMISU)
             override fun onDeviceClick(device: BDevice) {
                 //TODO 关于设备的记录留存 要思考下怎么处理
                 if (device.status != "0") {
@@ -136,6 +163,15 @@ class P2PFileTransferActivity : AppCompatActivity(){
 
         //P2P
         initP2pProxy()
+        createFile()
+    }
+
+    private fun createFile() {
+        val destinationFile = File(getExternalFilesDir(null),"A2A")
+        if(!destinationFile.exists()) {
+            var ddd = destinationFile.mkdirs()
+            Log.d("LZP","-----------------？？？？？？？？？？$ddd,${destinationFile.absolutePath}")
+        }
     }
 
     private fun initP2pProxy() {
@@ -169,9 +205,16 @@ class P2PFileTransferActivity : AppCompatActivity(){
 
             override fun onGroupOrClient(isGroup: Boolean) {
                 if (isGroup) {
-                    Toast.makeText(mConext, "group owner", Toast.LENGTH_SHORT).show()
+                    if(mLinkType == P2pManagerProxy.LinkTypeClient) {
+                        Toast.makeText(mConext, "客户端注册了GO", Toast.LENGTH_SHORT).show()
+                        P2pManagerProxy.instance.cancelConnect()
+                        P2pManagerProxy.instance.removeGroupDevice()
+
+                    }else {
+                        Toast.makeText(mConext, "This is GO", Toast.LENGTH_SHORT).show()
+                    }
                 } else {
-                    Toast.makeText(mConext, "client", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(mConext, "This is GC", Toast.LENGTH_SHORT).show()
                 }
             }
 
@@ -180,16 +223,23 @@ class P2PFileTransferActivity : AppCompatActivity(){
         p2pManagerProxy?.registerMsgListener(object: P2pManagerProxy.P2pMsgListener{
             override fun onMessgae(data: String) {
                 showMsgData?.text = data.toString()
+                val receivedMessage = Gson().fromJson(data, BDMsg::class.java)
             }
 
             override fun onFileResult(result: Boolean) {
                 showMsgData?.text = "服务端接收文件状态：$result"
+                fileSendStatus = 2
             }
         })
 
         if(mLinkType == P2pManagerProxy.LinkTypeServer) {
             p2pManagerProxy?.initP2pServerProxy(this, mainLooper)
-            p2pManagerProxy?.RegisterReceiveFile(Environment.getExternalStorageDirectory().absolutePath+"/P2P/")
+            val destinationFile = File(getExternalFilesDir(null),"A2A")
+            if(!destinationFile.exists()) {
+                var ddd = destinationFile.mkdirs()
+                Log.d("LZP","-----------------？？？？？？？？？？$ddd,${destinationFile.absolutePath}")
+            }
+            p2pManagerProxy?.registerReceiveFilePath(destinationFile.absolutePath)
         }else {
             p2pManagerProxy?.initP2pClientProxy(this, mainLooper)
         }
@@ -203,6 +253,8 @@ class P2PFileTransferActivity : AppCompatActivity(){
 
     override fun onPause() {
         super.onPause()
+        p2pManagerProxy?.unRegisterDataPoint()
+        p2pManagerProxy?.unRegisterReceiveFile()
     }
 
     private fun startScarn() {
@@ -220,13 +272,11 @@ class P2PFileTransferActivity : AppCompatActivity(){
      * @param path 绝对路径，keyevent可忽略
      * @param fileName 文件名称，keyevent可忽略
      */
-    private fun sendKey(type: String,path: String,fileName: String,text: String,keyevent:String) {
+    private fun sendKey(type: String,text: String,keyevent:String) {
         // 创建消息对象
         val message = BDMsg(
             type,
             BDMsgData(
-                path,
-                fileName,
                 text,
                 keyevent
             )
@@ -239,7 +289,8 @@ class P2PFileTransferActivity : AppCompatActivity(){
         p2pManagerProxy?.sendJsonData(jsonMessage,InterConstants.MessagePort)
     }
 
-    private fun sendFile(path: String,fileName: String) {
-//        p2pManagerProxy?.
+    private fun sendFile(path: String) {
+        Log.d("LZP","-----------------？？？？？？？？？path:$path,InterConstants.FilePort:${InterConstants.FilePort}")
+        p2pManagerProxy?.sendFile(path,InterConstants.FilePort)
     }
 }
