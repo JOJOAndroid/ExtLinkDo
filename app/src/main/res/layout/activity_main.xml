@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingStart="20dp"
+    android:paddingEnd="20dp">
+
+    <TextView
+        android:id="@+id/devicesNameTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="手机名称"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:gravity="center"
+        />
+    <TextView
+        android:id="@+id/devicesName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Hello World!"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/devicesNameTitle"
+        android:gravity="center"
+        />
+
+    <View
+        android:id="@+id/divider"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#3c3c3c"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/devicesName"
+        android:layout_marginTop="10dp"
+        />
+
+
+    <TextView
+        android:id="@+id/devices_list"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="可用设备"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/divider"
+        android:gravity="center"
+        android:layout_marginTop="20dp"
+        />
+
+    <TextView
+        android:id="@+id/devices_update"
+        android:layout_width="40dp"
+        android:layout_height="wrap_content"
+        android:text="刷新"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/divider"
+        android:gravity="center"
+        android:layout_marginTop="20dp"
+        />
+
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        app:layout_constraintTop_toBottomOf="@id/devices_update"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_marginTop="20dp"
+        />
+
+    <View
+        android:id="@+id/divider2"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#3c3c3c"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/recyclerView"
+        android:layout_marginTop="10dp"
+        />
+
+    <TextView
+        android:id="@+id/linkt_type"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="已保存的群组"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/divider2"
+        android:gravity="center"
+        android:layout_marginTop="20dp"
+        />
+
+    <LinearLayout
+        android:id="@+id/client_send"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="发送key"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/divider2"
+        android:layout_marginTop="50dp"
+        android:orientation="horizontal"
+        >
+        <Button
+            android:id="@+id/send_key"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="发送key"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/divider2"
+            android:gravity="center"
+            />
+        <Button
+            android:id="@+id/send_media"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="发送media"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/divider2"
+            android:gravity="center"
+            android:layout_marginLeft="10dp"
+            />
+        <Button
+            android:id="@+id/send_txt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="发送video"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/divider2"
+            android:gravity="center"
+            android:layout_marginLeft="10dp"
+            />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/show_msg"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="发送/接受文件Json展示"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/client_send"
+        android:gravity="center"
+        android:layout_marginTop="20dp"
+        />
+    <TextView
+        android:id="@+id/show_msg_data"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:text="发送/接受文件Json展示"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/show_msg"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginTop="10dp"
+        android:background="#3c3c"
+        />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

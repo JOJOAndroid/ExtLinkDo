@@ -1,0 +1,14 @@
+{
+  "type": "7071",
+  "key": "randomGeneratedKey",
+  "transferport": "randomGeneratedPort",
+  "transfercontinue": true,
+  "data": {
+    "path": "/example/path",
+    "filename": "kk.apk",
+    "text": "--文字",
+    "keyevent": "exampleKeyEvent",
+    "deviceFile": "exampleDeviceFile"
+  },
+  "serverstate": "wait"
+}
