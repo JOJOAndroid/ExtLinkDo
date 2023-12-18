@@ -63,39 +63,9 @@ class FileReceiver () {
                                 total += len;
                                 progress = ((total * 100) / fileBean.fileLength).toInt()
                                 len = mInputStream?.read(bytes)!!
-                                Log.e("LZP", "文件接收进度: " + progress);
+                                Log.e("LZP", "文件接收进度: $progress");
                             }
-
-//                            DataInputStream(clientSocket?.getInputStream()).use { dis ->
-//                                val fileName = dis.readUTF()
-//                                val fileSize = dis.readLong()
-
-//                                Log.e("lzp", "接收到文件: $fileName, 大小: $fileSize 字节")
-//
-//                                // 创建文件输出流
-//                                val file = File(destinationFile, fileName)
-//                                if(!file.exists()) {
-//                                    file.createNewFile()
-//                                }
-//                                Log.e("lzp", "=================")
-//                                val fos = FileOutputStream(file)
-//                                BufferedOutputStream(fos).use { bos ->
-//                                    // 接收文件内容
-//                                    val buffer = ByteArray(4096)
-//                                    var bytesRead: Int
-//                                    var totalBytesRead: Long = 0
-//
-//                                    while (totalBytesRead < fileSize) {
-//                                        bytesRead = dis.read(buffer)
-//                                        if (bytesRead == -1) break
-//                                        bos.write(buffer, 0, bytesRead)
-//                                        totalBytesRead += bytesRead
-//                                    }
-//                                }
-
-//                                Log.e("lzp", "文件接收完成，保存路径: ${file.absolutePath}")
-                                msgListener?.onFileResult(true)
-//                            }
+                            msgListener?.onFileResult(true)
                         } catch (e: IOException) {
                             Log.e("lzp", "IOException: $e")
                             msgListener?.onFileResult(false)

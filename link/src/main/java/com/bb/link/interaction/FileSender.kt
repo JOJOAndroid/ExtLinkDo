@@ -31,15 +31,15 @@ class FileSender(private val filePath: String, private val ipAddress: String, pr
                             val objectOutputStream = ObjectOutputStream(outputStream)
 
 
-                            val fileBean: FileBean = FileBean(filePath,file.length(),"001")
+                            val fileBean = FileBean(filePath,file.length(),"001")
                             objectOutputStream.writeObject(fileBean)
 
 
-                            val inputStream : FileInputStream  = FileInputStream(file);
+                            val inputStream  = FileInputStream(file);
                             val size:Long  = fileBean.fileLength;
-                            var total:Long  = 0;
+                            var total:Long  = 0
                             val bytes= ByteArray(1024)
-                            var  len:Int = 0;
+                            var len = 0
 
                             len = inputStream.read(bytes)
 
@@ -48,43 +48,22 @@ class FileSender(private val filePath: String, private val ipAddress: String, pr
                                 total += len;
                                 val progress : Long = (total * 100) / size
                                 len = inputStream.read(bytes)
-                                Log.e("LZP", "文件发送进度：" + progress);
+                                Log.e("LZP", "文件发送进度：$progress");
                             }
                             outputStream?.close();
                             objectOutputStream.close();
                             inputStream.close();
                             socket?.close();
-
-//                            DataOutputStream(socket?.getOutputStream()).use { dos ->
-//                                dos.writeUTF(file.name)
-//                                dos.writeInt(fileSize)
-//                            }
-                            Log.d("LZP","send2")
-//                            if(socket != null && socket.isConnected) {
-//                                // 发送文件内容
-//                                BufferedInputStream(FileInputStream(file)).use { bis ->
-//                                    DataOutputStream(socket?.getOutputStream()).use { dos ->
-//                                        val buffer = ByteArray(4096)
-//                                        var bytesRead: Int
-//
-//                                        while (bis.read(buffer).also { bytesRead = it } != -1) {
-//                                            dos.write(buffer, 0, bytesRead)
-//                                        }
-//                                    }
-//                                }
-//                            }else {
-//                                Log.d("LZP","socket 断开了")
-//                            }
                             Log.d("LZP","文件发送完成")
                         }
                     }catch (e: Exception) {
                         e.printStackTrace()
                     }finally {
-//                        try {
-//                            clientSocket?.close()
-//                        } catch (e: IOException) {
-//                            e.printStackTrace()
-//                        }
+                        try {
+                            clientSocket?.close()
+                        } catch (e: IOException) {
+                            e.printStackTrace()
+                        }
                     }
                 }else {
                     Log.d("LZP","File not found:")
@@ -96,6 +75,6 @@ class FileSender(private val filePath: String, private val ipAddress: String, pr
     }
 
     fun colseSocket() {
-//        clientSocket?.close()
+        clientSocket?.close()
     }
 }

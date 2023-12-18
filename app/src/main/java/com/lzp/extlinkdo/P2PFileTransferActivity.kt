@@ -3,10 +3,7 @@ package com.lzp.extlinkdo
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.pm.ApplicationInfo
-import android.content.pm.PackageManager
 import android.net.wifi.p2p.*
-import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.Settings
@@ -15,11 +12,9 @@ import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.transition.Visibility
 import com.bb.link.interaction.InterConstants
 import com.bb.link.manager.P2pManagerProxy
 import com.bb.link.mode.BDMsg
@@ -163,15 +158,6 @@ class P2PFileTransferActivity : AppCompatActivity(){
 
         //P2P
         initP2pProxy()
-        createFile()
-    }
-
-    private fun createFile() {
-        val destinationFile = File(getExternalFilesDir(null),"A2A")
-        if(!destinationFile.exists()) {
-            var ddd = destinationFile.mkdirs()
-            Log.d("LZP","-----------------？？？？？？？？？？$ddd,${destinationFile.absolutePath}")
-        }
     }
 
     private fun initP2pProxy() {
@@ -234,10 +220,10 @@ class P2PFileTransferActivity : AppCompatActivity(){
 
         if(mLinkType == P2pManagerProxy.LinkTypeServer) {
             p2pManagerProxy?.initP2pServerProxy(this, mainLooper)
+            //创建服务端接受文件的路径
             val destinationFile = File(getExternalFilesDir(null),"A2A")
             if(!destinationFile.exists()) {
-                var ddd = destinationFile.mkdirs()
-                Log.d("LZP","-----------------？？？？？？？？？？$ddd,${destinationFile.absolutePath}")
+                destinationFile.mkdirs()
             }
             p2pManagerProxy?.registerReceiveFilePath(destinationFile.absolutePath)
         }else {
